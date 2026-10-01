@@ -15,8 +15,7 @@
         -656
       ],
       "id": "c710d0d5-4bbd-45f0-a82b-9dea24aadb19",
-      "name": "Webhook",
-      "webhookId": "e5a46da0-646e-4e63-980a-5703acd75d1b"
+      "name": "Webhook"
     },
     {
       "parameters": {
@@ -114,13 +113,7 @@
         -736
       ],
       "id": "5e499749-a09f-4107-aac7-13bf801f7ecb",
-      "name": "Lookup & Context",
-      "credentials": {
-        "postgres": {
-          "id": "8NJ3OPTtToR2QoOq",
-          "name": "Postgres account"
-        }
-      }
+      "name": "Lookup & Context"
     },
     {
       "parameters": {
@@ -210,13 +203,7 @@
         -800
       ],
       "id": "f0bd32e9-da06-4885-8451-886e12a73324",
-      "name": "Google Gemini Chat Model",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "DofixFOqhEeOp8aN",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
+      "name": "Google Gemini Chat Model"
     },
     {
       "parameters": {
@@ -269,9 +256,9 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "0jFlE7tsXVNc3k3W",
+          "value": "REPLACE_WITH_CS_SUB_SEARCH_KNOWLEDGE_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/0jFlE7tsXVNc3k3W",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_SEARCH_KNOWLEDGE_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Search"
         },
         "workflowInputs": {
@@ -357,22 +344,16 @@
         -64
       ],
       "id": "6db7aa96-6aac-4e44-8ced-5355e4ebdb3e",
-      "name": "Google Gemini Chat Model1",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "DofixFOqhEeOp8aN",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
+      "name": "Google Gemini Chat Model1"
     },
     {
       "parameters": {
         "description": "Search the Customer Success knowledge base. Input: a short natural-language query. Returns matching documents with similarity scores. Use only if the retrieved knowledge in the prompt is missing or insufficient.",
         "workflowId": {
           "__rl": true,
-          "value": "0jFlE7tsXVNc3k3W",
+          "value": "REPLACE_WITH_CS_SUB_SEARCH_KNOWLEDGE_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/0jFlE7tsXVNc3k3W",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_SEARCH_KNOWLEDGE_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Search Knowledge"
         },
         "workflowInputs": {
@@ -425,13 +406,7 @@
         -64
       ],
       "id": "12ed611b-ad15-4587-91bb-453d9baa6e0e",
-      "name": "get_recent_interactions",
-      "credentials": {
-        "postgres": {
-          "id": "8NJ3OPTtToR2QoOq",
-          "name": "Postgres account"
-        }
-      }
+      "name": "get_recent_interactions"
     },
     {
       "parameters": {
@@ -450,13 +425,7 @@
         -64
       ],
       "id": "b62c494f-99d0-46dd-a025-4ad9984ca355",
-      "name": "get_customer_health",
-      "credentials": {
-        "postgres": {
-          "id": "8NJ3OPTtToR2QoOq",
-          "name": "Postgres account"
-        }
-      }
+      "name": "get_customer_health"
     },
     {
       "parameters": {
@@ -578,13 +547,7 @@
         -192
       ],
       "id": "f5adbec8-c2cb-4b4b-8f7f-9a06f542e3e8",
-      "name": "Google Gemini Chat Model2",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "DofixFOqhEeOp8aN",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
+      "name": "Google Gemini Chat Model2"
     },
     {
       "parameters": {
@@ -627,7 +590,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const CHANNELS = {\n  csm: 'C0C5THC9Y5U',\n  account_owner: 'C0C6PSX0CC8',\n  billing_team: 'C0C5Q7HG5LM',\n  review: 'C0C6PT7C1U0'\n};\n\nconst d = $json;\nconst c = d.customer;\nconst r = d.routing;\n\nconst LABELS = {\n  escalate: ':rotating_light: Escalation',\n  csm_review: ':warning: At-risk customer',\n  billing: ':receipt: Billing request',\n  human_review: ':raising_hand: Needs human review',\n  commercial: ':chart_with_upwards_trend: Commercial opportunity',\n  adoption: ':seedling: Adoption blocker',\n  standard: ':speech_balloon: Customer message'\n};\n\n// ---------- Alert text ----------\nconst lines = [\n  `*${LABELS[r.route]}: ${c.company_name}*`,\n  `Contact: ${c.contact_name} (${c.customer_segment}, ${c.plan} plan) | Owner: ${c.account_owner}`,\n  `Health: ${d.health.previous_status} → ${d.health.computed_status} | Adoption score: ${c.adoption_score}`,\n  `Type: ${d.ai.request_type} | Sentiment: ${d.ai.sentiment}`,\n  `Summary: ${d.ai.summary}`,\n  `Rules: ${r.rules_triggered.join(', ') || 'none'}`\n];\nif (r.escalation) lines.push(`Escalation severity: ${r.escalation.severity}`);\nif (r.tasks.length) lines.push(`Planned tasks: ${r.tasks.map(t => `${t.task_type} → ${t.assigned_to}`).join('; ')}`);\nconst alertText = lines.join('\\n');\n\nconst alerts = r.notify.map(t => ({ target: t, channel: CHANNELS[t], text: alertText }));\n\n// No AI draft: a human must write the reply\nif (r.response_mode === 'none') {\n  alerts.push({\n    target: 'review',\n    channel: CHANNELS.review,\n    text: `${alertText}\\n:no_entry: *No AI draft. Manual reply required.* Reasons: ${r.hold_reasons.join('; ')}`\n  });\n}\n\n// ---------- Approval ----------\nconst needsApproval = r.response_mode === 'approval' && d.draft.body !== null;\nconst usedTitles = d.knowledge.docs\n  .filter(x => d.draft.used_doc_ids.includes(x.doc_id))\n  .map(x => x.title);\n\nconst approvalText = [\n  `*Approval needed: reply to ${c.company_name}*`,\n  `Route: ${r.route} | Confidence: ${r.confidence_used} | Draft status: ${d.draft.status}`,\n  `Why review: ${r.hold_reasons.join('; ') || r.rules_triggered.join(', ') || 'approval mode'}`,\n  `Knowledge used: ${usedTitles.join(', ') || 'none'}`,\n  d.draft.violations.length ? `:warning: Draft flags: ${d.draft.violations.join('; ')}` : null,\n  '',\n  `*Subject:* ${d.draft.subject}`,\n  d.draft.body\n].filter(x => x !== null).join('\\n');\n\nreturn {\n  json: {\n    ...d,\n    slack: { alerts, needs_approval: needsApproval, approval_text: approvalText, review_channel: CHANNELS.review }\n  }\n};"
+        "jsCode": "const CHANNELS = {\n  csm: 'YOUR_CSM_SLACK_CHANNEL_ID',\n  account_owner: 'YOUR_ACCOUNT_OWNER_SLACK_CHANNEL_ID',\n  billing_team: 'YOUR_BILLING_SLACK_CHANNEL_ID',\n  review: 'YOUR_REVIEW_SLACK_CHANNEL_ID'\n};\n\nconst d = $json;\nconst c = d.customer;\nconst r = d.routing;\n\nconst LABELS = {\n  escalate: ':rotating_light: Escalation',\n  csm_review: ':warning: At-risk customer',\n  billing: ':receipt: Billing request',\n  human_review: ':raising_hand: Needs human review',\n  commercial: ':chart_with_upwards_trend: Commercial opportunity',\n  adoption: ':seedling: Adoption blocker',\n  standard: ':speech_balloon: Customer message'\n};\n\n// ---------- Alert text ----------\nconst lines = [\n  `*${LABELS[r.route]}: ${c.company_name}*`,\n  `Contact: ${c.contact_name} (${c.customer_segment}, ${c.plan} plan) | Owner: ${c.account_owner}`,\n  `Health: ${d.health.previous_status} → ${d.health.computed_status} | Adoption score: ${c.adoption_score}`,\n  `Type: ${d.ai.request_type} | Sentiment: ${d.ai.sentiment}`,\n  `Summary: ${d.ai.summary}`,\n  `Rules: ${r.rules_triggered.join(', ') || 'none'}`\n];\nif (r.escalation) lines.push(`Escalation severity: ${r.escalation.severity}`);\nif (r.tasks.length) lines.push(`Planned tasks: ${r.tasks.map(t => `${t.task_type} → ${t.assigned_to}`).join('; ')}`);\nconst alertText = lines.join('\\n');\n\nconst alerts = r.notify.map(t => ({ target: t, channel: CHANNELS[t], text: alertText }));\n\n// No AI draft: a human must write the reply\nif (r.response_mode === 'none') {\n  alerts.push({\n    target: 'review',\n    channel: CHANNELS.review,\n    text: `${alertText}\\n:no_entry: *No AI draft. Manual reply required.* Reasons: ${r.hold_reasons.join('; ')}`\n  });\n}\n\n// ---------- Approval ----------\nconst needsApproval = r.response_mode === 'approval' && d.draft.body !== null;\nconst usedTitles = d.knowledge.docs\n  .filter(x => d.draft.used_doc_ids.includes(x.doc_id))\n  .map(x => x.title);\n\nconst approvalText = [\n  `*Approval needed: reply to ${c.company_name}*`,\n  `Route: ${r.route} | Confidence: ${r.confidence_used} | Draft status: ${d.draft.status}`,\n  `Why review: ${r.hold_reasons.join('; ') || r.rules_triggered.join(', ') || 'approval mode'}`,\n  `Knowledge used: ${usedTitles.join(', ') || 'none'}`,\n  d.draft.violations.length ? `:warning: Draft flags: ${d.draft.violations.join('; ')}` : null,\n  '',\n  `*Subject:* ${d.draft.subject}`,\n  d.draft.body\n].filter(x => x !== null).join('\\n');\n\nreturn {\n  json: {\n    ...d,\n    slack: { alerts, needs_approval: needsApproval, approval_text: approvalText, review_channel: CHANNELS.review }\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -659,13 +622,6 @@
       ],
       "id": "a22cb211-dba5-4f5a-9f89-0b004e00e187",
       "name": "Slack Alert",
-      "webhookId": "afa8d6b8-c46b-493c-8e8b-2f9625d95e67",
-      "credentials": {
-        "slackApi": {
-          "id": "6kkMXwa0EI1uiaVW",
-          "name": "Slack account"
-        }
-      },
       "onError": "continueErrorOutput"
     },
     {
@@ -735,13 +691,6 @@
       ],
       "id": "9676d932-24bb-4aff-b8a1-132886c9b7fb",
       "name": "Send message and wait for response",
-      "webhookId": "9c8f417e-75dd-463c-a0f1-47d95059b88f",
-      "credentials": {
-        "slackApi": {
-          "id": "6kkMXwa0EI1uiaVW",
-          "name": "Slack account"
-        }
-      },
       "onError": "continueRegularOutput"
     },
     {
@@ -773,7 +722,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const TEST_RECIPIENT = 'cpe.panopio.johngabriel@gmail.com'; // test mode. Set to '' in production.\n\nconst d = $json;\nconst r = d.routing;\nconst c = d.customer;\nconst willEmail = d.final.send_email === true;\n\nlet status;\nif (r.route === 'escalate') status = 'escalated';\nelse if (!willEmail) status = 'awaiting_review';\nelse if (r.route === 'standard') status = 'resolved';\nelse status = 'open';\n\nconst payload = {\n  customer_id: c.customer_id,\n  message_id: d.message.message_id,\n  channel: d.message.channel,\n  sender_email: d.message.sender_email,\n  subject: d.message.subject,\n  message_body: d.message.message_body,\n  request_type: d.ai.request_type,\n  sentiment: d.ai.sentiment,\n  summary: d.ai.summary,\n  topic_key: d.ai.topic_key,\n  confidence: r.confidence_used,\n  status,\n  tasks: r.tasks,\n  escalation: r.escalation,\n  health_changed: d.health.status_changed,\n  health_status: d.health.computed_status,\n  adoption_score: c.adoption_score,\n  risk_reason: d.health.reasons.join('; ') || null\n};\n\nreturn {\n  json: {\n    ...d,\n    save: { payload_b64: Buffer.from(JSON.stringify(payload)).toString('base64'), status },\n    email: { to: TEST_RECIPIENT || d.message.sender_email, send: willEmail }\n  }\n};"
+        "jsCode": "const TEST_RECIPIENT = 'YOUR_TEST_EMAIL@example.com'; // test mode. Set to '' in production.\n\nconst d = $json;\nconst r = d.routing;\nconst c = d.customer;\nconst willEmail = d.final.send_email === true;\n\nlet status;\nif (r.route === 'escalate') status = 'escalated';\nelse if (!willEmail) status = 'awaiting_review';\nelse if (r.route === 'standard') status = 'resolved';\nelse status = 'open';\n\nconst payload = {\n  customer_id: c.customer_id,\n  message_id: d.message.message_id,\n  channel: d.message.channel,\n  sender_email: d.message.sender_email,\n  subject: d.message.subject,\n  message_body: d.message.message_body,\n  request_type: d.ai.request_type,\n  sentiment: d.ai.sentiment,\n  summary: d.ai.summary,\n  topic_key: d.ai.topic_key,\n  confidence: r.confidence_used,\n  status,\n  tasks: r.tasks,\n  escalation: r.escalation,\n  health_changed: d.health.status_changed,\n  health_status: d.health.computed_status,\n  adoption_score: c.adoption_score,\n  risk_reason: d.health.reasons.join('; ') || null\n};\n\nreturn {\n  json: {\n    ...d,\n    save: { payload_b64: Buffer.from(JSON.stringify(payload)).toString('base64'), status },\n    email: { to: TEST_RECIPIENT || d.message.sender_email, send: willEmail }\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -799,13 +748,7 @@
         304
       ],
       "id": "f638d546-0232-4803-a9d3-0b3b7af0e658",
-      "name": "Save Case",
-      "credentials": {
-        "postgres": {
-          "id": "8NJ3OPTtToR2QoOq",
-          "name": "Postgres account"
-        }
-      }
+      "name": "Save Case"
     },
     {
       "parameters": {
@@ -869,13 +812,7 @@
         400
       ],
       "id": "10631162-2d67-4203-8e46-f3f5ef867b6a",
-      "name": "Mark Email Failed",
-      "credentials": {
-        "postgres": {
-          "id": "8NJ3OPTtToR2QoOq",
-          "name": "Postgres account"
-        }
-      }
+      "name": "Mark Email Failed"
     },
     {
       "parameters": {
@@ -941,12 +878,6 @@
       ],
       "id": "54bb2763-8b9a-421d-b51c-95bf99925008",
       "name": "Embed Question",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "DofixFOqhEeOp8aN",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      },
       "onError": "continueRegularOutput"
     },
     {
@@ -977,17 +908,11 @@
         688
       ],
       "id": "9abefd3e-a94a-424d-ba88-ae00f21aa2f0",
-      "name": "Find Cluster",
-      "credentials": {
-        "postgres": {
-          "id": "8NJ3OPTtToR2QoOq",
-          "name": "Postgres account"
-        }
-      }
+      "name": "Find Cluster"
     },
     {
       "parameters": {
-        "jsCode": "const CSM_CHANNEL = 'C0C5THC9Y5U';\nconst THRESHOLD = 3;\n\nconst r = $input.first().json;\nconst base = $('Merge Save Result').first().json;\nconst occ = r.occurrences;\n\n// Alert at 3, then at every multiple of 5\nif (occ < THRESHOLD || !(occ === THRESHOLD || occ % 5 === 0)) return [];\n\nconst top = base.knowledge.docs[0];\nconst recs = [];\nif (base.ai.request_type === 'Technical Support') {\n  recs.push('Review with Product/Support: a repeated technical issue may be a bug or a confusing workflow.');\n} else if (!top) {\n  recs.push('Create a knowledge article: no existing document matches this question.');\n} else {\n  recs.push(`Improve self-service: \"${top.title}\" already covers this, but customers keep asking. Add a clearer FAQ entry or in-app help link.`);\n}\nif (occ >= 5 && top) recs.push('Create a reusable response template for the support team.');\n\nconst text = [\n  `:repeat: *Recurring question detected* (${occ} times in 30 days, ${r.customers} customer(s))`,\n  `Example: ${r.example_summary}`,\n  'Recommended:',\n  ...recs.map(x => `• ${x}`)\n].join('\\n');\n\nreturn [{ json: { channel: CSM_CHANNEL, text } }];"
+        "jsCode": "const CSM_CHANNEL = 'YOUR_CSM_SLACK_CHANNEL_ID';\nconst THRESHOLD = 3;\n\nconst r = $input.first().json;\nconst base = $('Merge Save Result').first().json;\nconst occ = r.occurrences;\n\n// Alert at 3, then at every multiple of 5\nif (occ < THRESHOLD || !(occ === THRESHOLD || occ % 5 === 0)) return [];\n\nconst top = base.knowledge.docs[0];\nconst recs = [];\nif (base.ai.request_type === 'Technical Support') {\n  recs.push('Review with Product/Support: a repeated technical issue may be a bug or a confusing workflow.');\n} else if (!top) {\n  recs.push('Create a knowledge article: no existing document matches this question.');\n} else {\n  recs.push(`Improve self-service: \"${top.title}\" already covers this, but customers keep asking. Add a clearer FAQ entry or in-app help link.`);\n}\nif (occ >= 5 && top) recs.push('Create a reusable response template for the support team.');\n\nconst text = [\n  `:repeat: *Recurring question detected* (${occ} times in 30 days, ${r.customers} customer(s))`,\n  `Example: ${r.example_summary}`,\n  'Recommended:',\n  ...recs.map(x => `• ${x}`)\n].join('\\n');\n\nreturn [{ json: { channel: CSM_CHANNEL, text } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1019,13 +944,6 @@
       ],
       "id": "9309e36c-f33e-4be0-9b65-a3a48d077e62",
       "name": "Slack Recurring Alert",
-      "webhookId": "4918b14a-523d-4ac7-86a3-56f239a49eb5",
-      "credentials": {
-        "slackApi": {
-          "id": "6kkMXwa0EI1uiaVW",
-          "name": "Slack account"
-        }
-      },
       "onError": "continueRegularOutput"
     },
     {
@@ -1043,13 +961,7 @@
         -960
       ],
       "id": "5c87f38a-017e-4740-a9e1-bc49656e6914",
-      "name": "Duplicate Check",
-      "credentials": {
-        "postgres": {
-          "id": "8NJ3OPTtToR2QoOq",
-          "name": "Postgres account"
-        }
-      }
+      "name": "Duplicate Check"
     },
     {
       "parameters": {
@@ -1089,9 +1001,9 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aUdCnNEXhfXFPAY3",
+          "value": "REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aUdCnNEXhfXFPAY3",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Write Audit Log"
         },
         "workflowInputs": {
@@ -1134,9 +1046,9 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aUdCnNEXhfXFPAY3",
+          "value": "REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aUdCnNEXhfXFPAY3",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Write Audit Log"
         },
         "workflowInputs": {
@@ -1175,7 +1087,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const REVIEW_CHANNEL = 'C0C6PT7C1U0';\nconst m = $('Validate Input').first().json.message;\nreturn { json: {\n  entry_b64: Buffer.from(JSON.stringify(m)).toString('base64'),\n  channel: REVIEW_CHANNEL,\n  text: `:grey_question: *Message from unknown sender* (${m.sender_email})\\nSubject: ${m.subject}\\nNo customer record matches this email. Not auto-replied. Needs manual review.`\n} };"
+        "jsCode": "const REVIEW_CHANNEL = 'YOUR_REVIEW_SLACK_CHANNEL_ID';\nconst m = $('Validate Input').first().json.message;\nreturn { json: {\n  entry_b64: Buffer.from(JSON.stringify(m)).toString('base64'),\n  channel: REVIEW_CHANNEL,\n  text: `:grey_question: *Message from unknown sender* (${m.sender_email})\\nSubject: ${m.subject}\\nNo customer record matches this email. Not auto-replied. Needs manual review.`\n} };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1199,21 +1111,15 @@
         -608
       ],
       "id": "0a3f2fc2-8e0f-43da-a942-fce25a3d119c",
-      "name": "Save Unknown Sender",
-      "credentials": {
-        "postgres": {
-          "id": "8NJ3OPTtToR2QoOq",
-          "name": "Postgres account"
-        }
-      }
+      "name": "Save Unknown Sender"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aUdCnNEXhfXFPAY3",
+          "value": "REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aUdCnNEXhfXFPAY3",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Write Audit Log"
         },
         "workflowInputs": {
@@ -1280,9 +1186,9 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aUdCnNEXhfXFPAY3",
+          "value": "REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aUdCnNEXhfXFPAY3",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Write Audit Log"
         },
         "workflowInputs": {
@@ -1338,22 +1244,15 @@
       ],
       "id": "9b0efcdc-6069-4e96-9703-e241bd19d9f9",
       "name": "Slack Manual Reply Alert",
-      "webhookId": "ef53e2f9-77bb-4e87-8527-5a210f7307da",
-      "credentials": {
-        "slackApi": {
-          "id": "6kkMXwa0EI1uiaVW",
-          "name": "Slack account"
-        }
-      },
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aUdCnNEXhfXFPAY3",
+          "value": "REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aUdCnNEXhfXFPAY3",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Write Audit Log"
         },
         "workflowInputs": {
@@ -1409,14 +1308,7 @@
       ],
       "id": "56817d26-a0e1-4ca7-826d-695002acee85",
       "name": "Send Email",
-      "webhookId": "469a96aa-3229-4f6e-b5de-cb2853b3e0c9",
       "retryOnFail": false,
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "ZVUTK5rQ2y2STwhz",
-          "name": "Gmail account"
-        }
-      },
       "onError": "continueErrorOutput"
     },
     {
@@ -1438,22 +1330,15 @@
       ],
       "id": "ff2fb530-eb2a-4cd2-bf23-7a3b32b121c9",
       "name": "Alert Unknown Sender",
-      "webhookId": "cae2d614-0815-4d86-b455-1a582bfd4d96",
-      "credentials": {
-        "slackApi": {
-          "id": "6kkMXwa0EI1uiaVW",
-          "name": "Slack account"
-        }
-      },
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aUdCnNEXhfXFPAY3",
+          "value": "REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aUdCnNEXhfXFPAY3",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Write Audit Log"
         },
         "workflowInputs": {
@@ -1494,9 +1379,9 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "aUdCnNEXhfXFPAY3",
+          "value": "REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "mode": "list",
-          "cachedResultUrl": "/workflow/aUdCnNEXhfXFPAY3",
+          "cachedResultUrl": "/workflow/REPLACE_WITH_CS_SUB_WRITE_AUDIT_LOG_WORKFLOW_ID",
           "cachedResultName": "CS Sub - Write Audit Log"
         },
         "workflowInputs": {
@@ -2226,21 +2111,14 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": true,
     "timeSavedMode": "fixed",
-    "callerPolicy": "workflowsFromSameOwner",
-    "errorWorkflow": "Tt9clJpUUpDKWTFc"
-  },
-  "versionId": "4ba50be6-5a7d-463d-a299-1245811d4450",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "bdcc9595218655dce7caa4fa899c96f4992d280dd9f901835638ce4c336b7a0b"
+    "callerPolicy": "workflowsFromSameOwner"
   },
   "nodeGroups": [],
-  "id": "wyFB1JJRfsgyUr0y",
   "tags": []
 }
