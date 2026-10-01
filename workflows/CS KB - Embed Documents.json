@@ -1,0 +1,133 @@
+{
+  "name": "CS KB - Embed Documents",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1becfdf5-f02c-40dc-811c-1e36e899100a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT doc_id, title, content FROM knowledge_documents WHERE embedding IS NULL ORDER BY doc_id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "0648256b-e985-4f97-a209-854a3a08e0a3",
+      "name": "Get Docs To Embed",
+      "credentials": {
+        "postgres": {
+          "id": "8NJ3OPTtToR2QoOq",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  model: 'models/gemini-embedding-001',\n  content: { parts: [{ text: $json.title + '\\n\\n' + $json.content }] },\n  taskType: 'RETRIEVAL_DOCUMENT',\n  outputDimensionality: 768\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "4f79ad29-c654-4aeb-a58c-81bfad98469d",
+      "name": "Embed Document",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DofixFOqhEeOp8aN",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE knowledge_documents\nSET embedding = '{{ JSON.stringify($json.embedding.values) }}'::vector\nWHERE doc_id = {{ $('Get Docs To Embed').item.json.doc_id }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        672,
+        0
+      ],
+      "id": "943bbc8b-0b4c-4ce5-84c7-e680344091d0",
+      "name": "Save Embedding",
+      "credentials": {
+        "postgres": {
+          "id": "8NJ3OPTtToR2QoOq",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Docs To Embed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Docs To Embed": {
+      "main": [
+        [
+          {
+            "node": "Embed Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed Document": {
+      "main": [
+        [
+          {
+            "node": "Save Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "611e4eda-bb38-480a-945a-13ea4636c483",
+  "meta": {
+    "instanceId": "bdcc9595218655dce7caa4fa899c96f4992d280dd9f901835638ce4c336b7a0b"
+  },
+  "nodeGroups": [],
+  "id": "dimWK6SpSuud9wp6",
+  "tags": []
+}

@@ -1,0 +1,128 @@
+{
+  "name": "CS Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "22e909cb-dc54-4a22-8ae1-072e56f41829",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6PT7C1U0",
+          "mode": "id"
+        },
+        "text": "=:x: *{{ $json.workflow.name }}* failed at node *{{ $json.execution.lastNodeExecuted }}*\n{{ $json.execution.error.message }}\n{{ $json.execution.url }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "906a7db9-79d3-4f68-8fa0-e9801e8dc4d4",
+      "name": "Slack Error Alert",
+      "webhookId": "8af6f36c-1fc3-428b-8be4-37b506269bd3",
+      "credentials": {
+        "slackApi": {
+          "id": "6kkMXwa0EI1uiaVW",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aUdCnNEXhfXFPAY3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aUdCnNEXhfXFPAY3",
+          "cachedResultName": "CS Sub - Write Audit Log"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "entry": "={{ { event: 'workflow_error', decision: 'failed', action_taken: 'slack_alerted', success: false, error_message: $json.execution.lastNodeExecuted + ': ' + $json.execution.error.message } }}"
+          },
+          "matchingColumns": [
+            "entry"
+          ],
+          "schema": [
+            {
+              "id": "entry",
+              "displayName": "entry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "7e531d3e-bd4c-4544-b558-804ff1714295",
+      "name": "Log Error",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Slack Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Error Alert": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "672d22bb-b7b2-4e20-8514-1c43f4763a80",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bdcc9595218655dce7caa4fa899c96f4992d280dd9f901835638ce4c336b7a0b"
+  },
+  "nodeGroups": [],
+  "id": "Tt9clJpUUpDKWTFc",
+  "tags": []
+}

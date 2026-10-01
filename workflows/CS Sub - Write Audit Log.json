@@ -1,0 +1,100 @@
+{
+  "name": "CS Sub - Write Audit Log",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "entry",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c0e71b21-e72a-4e3a-86b6-ce16fccd086b",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const e = $json.entry || {};\nconst clean = {\n  customer_id: e.customer_id ?? null,\n  interaction_id: e.interaction_id ?? null,\n  event: String(e.event ?? 'unknown').slice(0, 100),\n  classification: e.classification ?? null,\n  retrieved_doc_ids: Array.isArray(e.retrieved_doc_ids) ? e.retrieved_doc_ids : [],\n  decision: e.decision ?? null,\n  rule_triggered: e.rule_triggered ?? null,\n  ai_confidence: e.ai_confidence ?? null,\n  human_involved: e.human_involved === true,\n  action_taken: e.action_taken ?? null,\n  success: e.success !== false,\n  error_message: e.error_message ? String(e.error_message).slice(0, 1000) : null\n};\nreturn { json: { entry_b64: Buffer.from(JSON.stringify(clean)).toString('base64') } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "e236798c-8367-4b44-b184-918cbdc87b91",
+      "name": "Encode Entry"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO automation_logs\n  (customer_id, interaction_id, event, classification, retrieved_doc_ids, decision,\n   rule_triggered, ai_confidence, human_involved, action_taken, success, error_message)\nSELECT (j->>'customer_id')::int, (j->>'interaction_id')::int, j->>'event', j->>'classification',\n       ARRAY(SELECT jsonb_array_elements_text(j->'retrieved_doc_ids'))::int[],\n       j->>'decision', j->>'rule_triggered', (j->>'ai_confidence')::numeric,\n       (j->>'human_involved')::boolean, j->>'action_taken', (j->>'success')::boolean, j->>'error_message'\nFROM (SELECT convert_from(decode($1, 'base64'), 'UTF8')::jsonb AS j) p\nRETURNING log_id;",
+        "options": {
+          "queryReplacement": "={{ $json.entry_b64 }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        448,
+        0
+      ],
+      "id": "d5ac3375-51b0-4b82-b7a1-cbe1a70e5566",
+      "name": "Insert Log",
+      "credentials": {
+        "postgres": {
+          "id": "8NJ3OPTtToR2QoOq",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Encode Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encode Entry": {
+      "main": [
+        [
+          {
+            "node": "Insert Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "3b1b3c98-08ca-4844-b2d1-0c96de60a20f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bdcc9595218655dce7caa4fa899c96f4992d280dd9f901835638ce4c336b7a0b"
+  },
+  "nodeGroups": [],
+  "id": "aUdCnNEXhfXFPAY3",
+  "tags": []
+}

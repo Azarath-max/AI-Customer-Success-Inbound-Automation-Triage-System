@@ -1,0 +1,137 @@
+{
+  "name": "CS Sub - Search Knowledge",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e920a730-7952-474c-9722-0ac785976edf",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  model: 'models/gemini-embedding-001',\n  content: { parts: [{ text: $json.query }] },\n  taskType: 'RETRIEVAL_QUERY',\n  outputDimensionality: 768\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        0
+      ],
+      "id": "47630c4e-a1bc-43de-a14a-6284859647cd",
+      "name": "Embed Document",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DofixFOqhEeOp8aN",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT doc_id, title, category, content,\n       ROUND((1 - (embedding <=> '{{ JSON.stringify($json.embedding.values) }}'::vector))::numeric, 3) AS similarity\nFROM knowledge_documents\nWHERE embedding IS NOT NULL\nORDER BY embedding <=> '{{ JSON.stringify($json.embedding.values) }}'::vector\nLIMIT 3;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        464,
+        0
+      ],
+      "id": "904fe67c-baa1-4d04-91a8-4f0fee46ac3a",
+      "name": "Vector Search",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "8NJ3OPTtToR2QoOq",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const MIN_SIMILARITY = 0.55; // tune after testing\n\nconst rows = $input.all().map(i => i.json).filter(r => r.doc_id);\nconst docs = rows\n  .filter(r => Number(r.similarity) >= MIN_SIMILARITY)\n  .map(r => ({\n    doc_id: r.doc_id,\n    title: r.title,\n    category: r.category,\n    content: r.content,\n    similarity: Number(r.similarity)\n  }));\n\nreturn [{ json: { rag_status: docs.length ? 'ok' : 'no_match', docs } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        0
+      ],
+      "id": "b5e468a4-075e-4a79-a468-7e4cfc0737dd",
+      "name": "Format Results"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Embed Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed Document": {
+      "main": [
+        [
+          {
+            "node": "Vector Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Search": {
+      "main": [
+        [
+          {
+            "node": "Format Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "0f003333-6350-4ca0-a6a7-f70c2bb2f511",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bdcc9595218655dce7caa4fa899c96f4992d280dd9f901835638ce4c336b7a0b"
+  },
+  "nodeGroups": [],
+  "id": "0jFlE7tsXVNc3k3W",
+  "tags": []
+}
